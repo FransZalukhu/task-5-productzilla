@@ -58,15 +58,4 @@ jobs:
       - name: Deploy to production
         run: |
           echo "Deployment step - add your deployment commands here"
-          # Contoh deployment ke server:
-          # - name: Deploy to VPS
-          #   uses: appleboy/ssh-action@master
-          #   with:
-          #     host: ${{ secrets.HOST }}
-          #     username: ${{ secrets.USERNAME }}
-          #     key: ${{ secrets.SSH_KEY }}
-          #     script: |
-          #       cd /var/www/your-app
-          #       git pull origin main
-          #       npm install
-          #       pm2 restart your-app
+          # Testing Deployement
