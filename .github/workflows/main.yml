@@ -1,6 +1,5 @@
-name: Express MongoDB CI/CD
+name: Main Branch CI/CD
 
-# Memicu workflow saat push ke branch main
 on:
   push:
     branches:
@@ -17,45 +16,43 @@ env:
   PORT: 3000
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [16.x, 18.x]
-        mongodb-version: ["5.0"]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"
-
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.8.0
-        with:
-          mongodb-version: ${{ matrix.mongodb-version }}
+          node-version: "18"
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Run tests
         run: npm test
 
+      - name: Build project
+        run: npm run build
+
   deploy:
-    needs: build-and-test
-    runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Deploy to production
+      - name: Deploy to Server
+        env:
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PATH: ${{ secrets.SERVER_PATH }}
         run: |
-          echo "Deployment step - add your deployment commands here"
-          # Testing Deployement
+          ssh $SERVER_USER@$SERVER_HOST "
+            cd $SERVER_PATH &&
+            git pull &&
+            npm install &&
+            npm run build &&
+            pm2 restart app
+          "
