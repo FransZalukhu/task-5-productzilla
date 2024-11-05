@@ -1,5 +1,7 @@
 ## [Task 5] Unit Testing, CI/CD Introduction and Docker
 
+[![Express MongoDB CI/CD](https://github.com/FransZalukhu/task-5-productzilla/actions/workflows/main.yml/badge.svg)](https://github.com/FransZalukhu/task-5-productzilla/actions/workflows/main.yml)
+
 ### 1. Unit Testing
 - `Testing authController.ts`
 - `Testing bookController.ts`
