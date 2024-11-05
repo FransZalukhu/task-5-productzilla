@@ -1,5 +1,6 @@
-name: Main Branch CI/CD
+name: Express MongoDB CI/CD
 
+# Memicu workflow saat push ke branch main
 on:
   push:
     branches:
@@ -16,43 +17,56 @@ env:
   PORT: 3000
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+        mongodb-version: ["5.0"]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
-          node-version: "18"
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.8.0
+        with:
+          mongodb-version: ${{ matrix.mongodb-version }}
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run tests
         run: npm test
 
-      - name: Build project
-        run: npm run build
-
   deploy:
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    needs: build
+    needs: build-and-test
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
 
     steps:
-      - name: Deploy to Server
-        env:
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          SERVER_PATH: ${{ secrets.SERVER_PATH }}
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Deploy to production
         run: |
-          ssh $SERVER_USER@$SERVER_HOST "
-            cd $SERVER_PATH &&
-            git pull &&
-            npm install &&
-            npm run build &&
-            pm2 restart app
-          "
+          echo "Deployment step - add your deployment commands here"
+          # Contoh deployment ke server:
+          # - name: Deploy to VPS
+          #   uses: appleboy/ssh-action@master
+          #   with:
+          #     host: ${{ secrets.HOST }}
+          #     username: ${{ secrets.USERNAME }}
+          #     key: ${{ secrets.SSH_KEY }}
+          #     script: |
+          #       cd /var/www/your-app
+          #       git pull origin main
+          #       npm install
+          #       pm2 restart your-app
